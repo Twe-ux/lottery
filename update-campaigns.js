@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dev:2Sz748OACxL7TvP5@coworking.jhxdixz.mongodb.net/lottery';
+const MONGODB_URI = process.env.MONGODB_URI ;
 
 async function updateCampaigns() {
   try {
