@@ -92,7 +92,7 @@ export async function PUT(
 
     allowedFields.forEach((field) => {
       if (body[field] !== undefined) {
-        commerce[field] = body[field];
+        (commerce as any)[field] = body[field];
       }
     });
 

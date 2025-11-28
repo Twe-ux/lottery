@@ -40,6 +40,7 @@ const ReviewSchema = new Schema<IReview>(
     clientGoogleId: {
       type: String,
       required: false,
+      default: '',
     },
     rating: {
       type: Number,

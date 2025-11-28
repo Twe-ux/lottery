@@ -118,7 +118,7 @@ export default function PrizePoolsPage() {
     const poolPrizes: { [key: string]: { selected: boolean; percent: string } } = {};
 
     if (pool.prizes && Array.isArray(pool.prizes)) {
-      pool.prizes.forEach((p) => {
+      pool.prizes.forEach((p: any) => {
         const prizeId = typeof p.prizeId === 'string' ? p.prizeId : p.prizeId.toString();
         console.log('🟡 [EDIT] Processing prize:', { original: p.prizeId, converted: prizeId, percent: p.probability.fixedPercent });
         poolPrizes[prizeId] = {
@@ -312,9 +312,9 @@ export default function PrizePoolsPage() {
                     )}
                   </div>
                   {pool.isComplete ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" title="Complet (100%)" />
+                    <CheckCircle className="w-5 h-5 text-green-500" aria-label="Complet (100%)" />
                   ) : (
-                    <AlertCircle className="w-5 h-5 text-yellow-500" title="Incomplet" />
+                    <AlertCircle className="w-5 h-5 text-yellow-500" aria-label="Incomplet" />
                   )}
                 </div>
 

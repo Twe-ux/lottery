@@ -28,16 +28,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Créer l'avis
-    const review = await Review.create({
+    const reviewDoc = await Review.create({
       commerceId,
       campaignId,
       rating: reviewData.rating,
       reviewText: reviewData.reviewText,
       clientName: reviewData.clientName,
       clientEmail: reviewData.clientEmail,
+      clientGoogleId: reviewData.clientGoogleId || '',
       status: 'pending',
-      source: 'internal',
     });
+    const review = Array.isArray(reviewDoc) ? reviewDoc[0] : reviewDoc;
 
     // Vérifier qu'il n'a pas déjà participé avec cet email
     const existingParticipation = await Participation.findOne({

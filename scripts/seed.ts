@@ -4,6 +4,7 @@ import dbConnect from '../lib/db/connect';
 import User from '../lib/db/models/User';
 import Commerce from '../lib/db/models/Commerce';
 import Prize from '../lib/db/models/Prize';
+import PrizePool from '../lib/db/models/PrizePool';
 import Campaign from '../lib/db/models/Campaign';
 
 async function seed() {
@@ -120,27 +121,40 @@ async function seed() {
       const createdPrizes = await Prize.insertMany(prizes);
       console.log('✓ Demo prizes created (4 prizes)');
 
+      // Créer un prize pool
+      const prizePoolDoc = await PrizePool.create({
+        commerceId: commerce._id,
+        name: 'Pool de Noël 2024',
+        description: 'Lots pour la campagne de Noël',
+        prizes: createdPrizes.map((p) => ({
+          prizeId: p._id,
+          probability: {
+            mode: 'fixed' as const,
+            fixedPercent: 25, // 4 lots donc 25% chacun
+          },
+        })),
+        isActive: true,
+      });
+      const prizePool = Array.isArray(prizePoolDoc) ? prizePoolDoc[0] : prizePoolDoc;
+      console.log('✓ Demo prize pool created');
+
       // Créer une campagne active
       const campaign = await Campaign.create({
         commerceId: commerce._id,
         name: 'Campagne de Noël 2024',
         description: 'Collectez des avis et gagnez des cadeaux !',
-        prizes: createdPrizes.map((p) => p._id),
+        prizePoolId: prizePool._id,
         isActive: true,
         startDate: new Date('2024-01-01'),
         endDate: new Date('2025-12-31'),
         qrCodeUrl: '',
         settings: {
           expirationDays: 30,
-          requireGoogleReview: false,
-          minRatingForSpin: 1,
-          maxParticipationsPerEmail: 1,
         },
         stats: {
-          totalParticipations: 0,
+          totalScans: 0,
           totalReviews: 0,
           totalWinners: 0,
-          avgRating: 0,
         },
       });
       console.log('✓ Demo campaign created');
@@ -158,26 +172,38 @@ async function seed() {
         const existingPrizes = await Prize.find({ commerceId: existingCommerce._id });
 
         if (existingPrizes.length > 0) {
+          // Créer un prize pool
+          const prizePoolDoc = await PrizePool.create({
+            commerceId: existingCommerce._id,
+            name: 'Pool de Noël 2024',
+            description: 'Lots pour la campagne de Noël',
+            prizes: existingPrizes.map((p) => ({
+              prizeId: p._id,
+              probability: {
+                mode: 'fixed' as const,
+                fixedPercent: Math.floor(100 / existingPrizes.length),
+              },
+            })),
+            isActive: true,
+          });
+          const prizePool = Array.isArray(prizePoolDoc) ? prizePoolDoc[0] : prizePoolDoc;
+
           const campaign = await Campaign.create({
             commerceId: existingCommerce._id,
             name: 'Campagne de Noël 2024',
             description: 'Collectez des avis et gagnez des cadeaux !',
-            prizes: existingPrizes.map((p) => p._id),
+            prizePoolId: prizePool._id,
             isActive: true,
             startDate: new Date('2024-01-01'),
             endDate: new Date('2025-12-31'),
             qrCodeUrl: '',
             settings: {
               expirationDays: 30,
-              requireGoogleReview: false,
-              minRatingForSpin: 1,
-              maxParticipationsPerEmail: 1,
             },
             stats: {
-              totalParticipations: 0,
+              totalScans: 0,
               totalReviews: 0,
               totalWinners: 0,
-              avgRating: 0,
             },
           });
           console.log('✓ Demo campaign created for existing commerce');

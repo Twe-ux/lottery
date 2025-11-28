@@ -49,9 +49,14 @@ export async function POST(request: NextRequest) {
     // Récupérer le commerce pour avoir le slug
     const populatedCampaign = await Campaign.findById(campaign._id).populate('commerceId', 'slug');
 
+    if (!populatedCampaign) {
+      return NextResponse.json({ error: 'Campaign not found after creation' }, { status: 500 });
+    }
+
     // Générer l'URL du QR code qui pointe vers la page de bienvenue
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const qrCodeUrl = `${baseUrl}/${populatedCampaign.commerceId.slug}/welcome?c=${campaign._id}`;
+    const commerceSlug = (populatedCampaign.commerceId as any).slug;
+    const qrCodeUrl = `${baseUrl}/${commerceSlug}/welcome?c=${campaign._id}`;
 
     // Mettre à jour la campagne avec l'URL
     campaign.qrCodeUrl = qrCodeUrl;

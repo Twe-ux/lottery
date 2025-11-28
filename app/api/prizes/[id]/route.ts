@@ -78,7 +78,7 @@ export async function PUT(
     // Mise à jour des champs
     Object.keys(body).forEach((key) => {
       if (body[key] !== undefined && key !== 'commerceId') {
-        prize[key] = body[key];
+        (prize as any)[key] = body[key];
       }
     });
 

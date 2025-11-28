@@ -1,5 +1,19 @@
 import { IPrize } from '@/lib/db/models/Prize';
 
+export interface PrizeWithProbability extends IPrize {
+  probability: {
+    mode: 'fixed' | 'star-based';
+    fixedPercent?: number;
+    starBased?: {
+      star1: number;
+      star2: number;
+      star3: number;
+      star4: number;
+      star5: number;
+    };
+  };
+}
+
 export interface SpinResult {
   prizeId: string;
   prizeName: string;
@@ -10,12 +24,12 @@ export interface SpinResult {
 
 /**
  * Effectue un tirage de loterie pondéré selon les probabilités configurées
- * @param prizes - Tableau des lots disponibles
+ * @param prizes - Tableau des lots disponibles avec probabilités
  * @param starRating - Note donnée (1-5) - utilisé uniquement en mode star-based
  * @returns Résultat du tirage avec l'angle d'animation
  */
 export function spinRoulette(
-  prizes: IPrize[],
+  prizes: PrizeWithProbability[],
   starRating?: number
 ): SpinResult {
   // 1. Filtrer les lots actifs avec stock disponible
@@ -97,13 +111,13 @@ export function spinRoulette(
 
 /**
  * Valider que la somme des probabilités = 100%
- * @param prizes - Tableau des lots
+ * @param prizes - Tableau des lots avec probabilités
  * @param mode - Mode de probabilité
  * @param starRating - Note (pour mode star-based)
  * @returns true si valide, false sinon
  */
 export function validateProbabilities(
-  prizes: IPrize[],
+  prizes: PrizeWithProbability[],
   mode: 'fixed' | 'star-based',
   starRating?: number
 ): { valid: boolean; total: number } {

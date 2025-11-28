@@ -30,6 +30,8 @@ export default function PrizesPage() {
     stock: '',
     color: '#3B82F6',
     displayOrder: 0,
+    probabilityMode: 'fixed',
+    fixedPercent: '25',
   });
 
   useEffect(() => {
@@ -98,6 +100,8 @@ export default function PrizesPage() {
       stock: prize.stock?.toString() || '',
       color: prize.color,
       displayOrder: prize.displayOrder,
+      probabilityMode: 'fixed',
+      fixedPercent: '25',
     });
     setShowModal(true);
   };
@@ -136,6 +140,8 @@ export default function PrizesPage() {
           stock: '',
           color: '#3B82F6',
           displayOrder: 0,
+          probabilityMode: 'fixed',
+          fixedPercent: '25',
         });
         fetchPrizes(commerceId);
       } else {
