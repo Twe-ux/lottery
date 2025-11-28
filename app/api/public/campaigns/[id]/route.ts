@@ -38,10 +38,15 @@ export async function GET(req: NextRequest, context: RouteContext) {
       const prizePool = await PrizePool.findById(campaign.prizePoolId).populate('prizes.prizeId');
       if (prizePool && prizePool.prizes) {
         // Extraire les prizes populés avec leurs probabilités
-        prizes = prizePool.prizes.map((p: any) => ({
-          ...p.prizeId._doc,
-          probability: p.probability,
-        }));
+        prizes = prizePool.prizes
+          .filter((p: any) => p.prizeId && typeof p.prizeId === 'object')
+          .map((p: any) => {
+            const prizeData = p.prizeId._doc || p.prizeId.toObject?.() || p.prizeId;
+            return {
+              ...prizeData,
+              probability: p.probability,
+            };
+          });
       }
     }
 
