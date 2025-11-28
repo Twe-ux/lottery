@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
 
         const user = await User.findOne({ email: credentials.email });
 
-        if (!user) {
+        if (!user || !user.password) {
           return null;
         }
 
