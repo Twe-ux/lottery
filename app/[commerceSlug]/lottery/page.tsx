@@ -359,19 +359,8 @@ export default function LotteryPage() {
                         </p>
                       </div>
                       <p className="text-gray-700 mb-2 font-medium">
-                        ⏳ Temps de rédaction de votre avis...
+                        ⏳ Prenez le temps de publier votre avis...
                       </p>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                          <div
-                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 h-full transition-all duration-1000 shadow-sm"
-                            style={{ width: `${((45 - timeRemaining) / 45) * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-3xl font-bold text-orange-600 min-w-[70px] text-right">
-                          {timeRemaining}s
-                        </span>
-                      </div>
                     </div>
                   ) : (
                     <p className="text-green-700 mb-4 font-medium">
