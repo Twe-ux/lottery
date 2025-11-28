@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Créer la campagne d'abord pour avoir l'ID
-    const campaign = await Campaign.create(body);
+    const campaignDoc = await Campaign.create(body);
+    const campaign = Array.isArray(campaignDoc) ? campaignDoc[0] : campaignDoc;
 
     // Récupérer le commerce pour avoir le slug
     const populatedCampaign = await Campaign.findById(campaign._id).populate('commerceId', 'slug');
