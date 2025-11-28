@@ -3,6 +3,7 @@ import Link from 'next/link';
 import dbConnect from '@/lib/db/connect';
 import Commerce from '@/lib/db/models/Commerce';
 import Campaign from '@/lib/db/models/Campaign';
+import PrizePool from '@/lib/db/models/PrizePool';
 import Prize from '@/lib/db/models/Prize';
 import { Gift, Star, TrendingUp } from 'lucide-react';
 
@@ -52,9 +53,13 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
     );
   }
 
+  // Récupérer le pool de lots
+  const prizePool = await PrizePool.findById(campaign.prizePoolId).lean();
+
   // Récupérer les lots de la campagne
+  const prizeIds = prizePool?.prizes.map(p => p.prizeId) || [];
   const prizes = await Prize.find({
-    _id: { $in: campaign.prizes },
+    _id: { $in: prizeIds },
     isActive: true,
   }).lean();
 
