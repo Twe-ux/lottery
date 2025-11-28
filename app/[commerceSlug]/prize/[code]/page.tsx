@@ -40,7 +40,7 @@ export default async function PrizePage({ params }: PageProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <Link
-            href={`/${params.commerceSlug}`}
+            href={`/${commerceSlug}`}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             ← Retour
