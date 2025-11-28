@@ -4,10 +4,14 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import dbConnect from '@/lib/db/connect';
 import Prize from '@/lib/db/models/Prize';
 
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
+
 // GET - Get single prize
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,7 +22,8 @@ export async function GET(
 
     await dbConnect();
 
-    const prize = await Prize.findById(params.id);
+    const { id } = await context.params;
+    const prize = await Prize.findById(id);
 
     if (!prize) {
       return NextResponse.json({ error: 'Prize not found' }, { status: 404 });
@@ -42,7 +47,7 @@ export async function GET(
 // PUT - Update prize
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -53,7 +58,8 @@ export async function PUT(
 
     await dbConnect();
 
-    const prize = await Prize.findById(params.id);
+    const { id } = await context.params;
+    const prize = await Prize.findById(id);
 
     if (!prize) {
       return NextResponse.json({ error: 'Prize not found' }, { status: 404 });
@@ -88,7 +94,7 @@ export async function PUT(
 // DELETE - Delete prize
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -99,7 +105,8 @@ export async function DELETE(
 
     await dbConnect();
 
-    const prize = await Prize.findById(params.id);
+    const { id } = await context.params;
+    const prize = await Prize.findById(id);
 
     if (!prize) {
       return NextResponse.json({ error: 'Prize not found' }, { status: 404 });
@@ -113,7 +120,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await Prize.findByIdAndDelete(params.id);
+    await Prize.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'Prize deleted successfully' });
   } catch (error) {
