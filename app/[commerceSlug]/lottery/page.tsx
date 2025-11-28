@@ -42,6 +42,7 @@ export default function LotteryPage() {
   const [hasOpenedGoogleReview, setHasOpenedGoogleReview] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(45); // 45 secondes
   const [canParticipate, setCanParticipate] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
     reviewText: '',
@@ -152,6 +153,13 @@ export default function LotteryPage() {
   };
 
   const handleGoogleReviewClick = () => {
+    // Afficher la modale d'avertissement
+    setShowWarningModal(true);
+  };
+
+  const handleConfirmOpenGoogle = () => {
+    // Fermer la modale
+    setShowWarningModal(false);
     // Ouvrir Google Reviews
     if (googleBusinessUrl) {
       window.open(googleBusinessUrl, '_blank');
@@ -214,12 +222,62 @@ export default function LotteryPage() {
     }, 1500);
   };
 
+  // Modale d'avertissement avant d'ouvrir Google
+  const WarningModal = () => {
+    if (!showWarningModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-scale-in">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-4">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+              ⚠️ Important !
+            </h3>
+            <div className="text-left bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-gray-800 font-medium mb-2">
+                Une nouvelle fenêtre va s'ouvrir avec Google Reviews.
+              </p>
+              <p className="text-gray-700 mb-3">
+                📝 <strong>Après avoir publié votre avis</strong>, revenez sur cette page pour tourner la roue et gagner votre cadeau ! 🎁
+              </p>
+              <p className="text-sm text-gray-600 italic">
+                💡 Astuce : Gardez cet onglet ouvert pendant que vous laissez votre avis.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleConfirmOpenGoogle}
+              className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all shadow-lg"
+            >
+              J'ai compris, ouvrir Google Reviews
+            </button>
+            <button
+              onClick={() => setShowWarningModal(false)}
+              className="w-full px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Étape Google Prompt - pour les utilisateurs connectés avec Google
   if (step === 'google-prompt') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+      <>
+        <WarningModal />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-8">
             {/* Header avec profil Google */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-4">
@@ -292,17 +350,25 @@ export default function LotteryPage() {
                     </p>
                   ) : !canParticipate ? (
                     <div className="mb-4">
-                      <p className="text-gray-700 mb-2">
-                        ⏳ Prenez le temps de publier votre avis sur Google...
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-3">
+                        <p className="text-yellow-800 font-medium mb-1">
+                          🔔 N'oubliez pas de revenir ici !
+                        </p>
+                        <p className="text-yellow-700 text-sm">
+                          Après avoir publié votre avis sur Google, revenez sur cette page pour tourner la roue et remporter votre cadeau 🎁
+                        </p>
+                      </div>
+                      <p className="text-gray-700 mb-2 font-medium">
+                        ⏳ Temps de rédaction de votre avis...
                       </p>
                       <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
                           <div
-                            className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-1000"
+                            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-orange-500 h-full transition-all duration-1000 shadow-sm"
                             style={{ width: `${((45 - timeRemaining) / 45) * 100}%` }}
                           />
                         </div>
-                        <span className="text-2xl font-bold text-orange-600 min-w-[60px] text-right">
+                        <span className="text-3xl font-bold text-orange-600 min-w-[70px] text-right">
                           {timeRemaining}s
                         </span>
                       </div>
@@ -334,6 +400,7 @@ export default function LotteryPage() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
