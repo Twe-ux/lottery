@@ -608,13 +608,22 @@ export default function LotteryPage() {
               <p className="text-sm text-gray-600 mb-3">
                 Votre code de réclamation :
               </p>
-              <div className="text-3xl font-mono font-bold text-blue-600 mb-4">
+              <div className="text-3xl font-mono font-bold text-blue-600 mb-4 select-all">
                 {result.claimCode}
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 mb-4">
                 Valable jusqu'au{" "}
                 {new Date(result.expiresAt).toLocaleDateString("fr-FR")}
               </p>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+                <h3 className="font-semibold text-blue-900 mb-2 text-sm">
+                  💡 Sauvegardez votre code
+                </h3>
+                <p className="text-xs text-blue-800">
+                  Prenez une capture d'écran ou cliquez sur "Voir mon gain" pour accéder à toutes les options (copie, email, téléchargement).
+                </p>
+              </div>
             </div>
 
             <button
@@ -623,7 +632,7 @@ export default function LotteryPage() {
               }
               className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all"
             >
-              Voir mon gain
+              Voir mon gain et options de sauvegarde
             </button>
           </div>
         </div>
