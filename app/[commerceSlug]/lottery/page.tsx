@@ -40,9 +40,9 @@ export default function LotteryPage() {
   const [loading, setLoading] = useState(false);
   const [googleBusinessUrl, setGoogleBusinessUrl] = useState<string>('');
   const [hasOpenedGoogleReview, setHasOpenedGoogleReview] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(45); // 45 secondes
-  const [canParticipate, setCanParticipate] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(45);
+  const [canParticipate, setCanParticipate] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
     reviewText: '',
@@ -66,22 +66,17 @@ export default function LotteryPage() {
     }
   }, [session]);
 
-  // Compte à rebours du timer
+  // Compte à rebours de 45 secondes (en arrière-plan, sans affichage)
   useEffect(() => {
-    if (hasOpenedGoogleReview && !canParticipate && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            setCanParticipate(true);
-            return 0;
-          }
-          return prev - 1;
-        });
+    if (hasOpenedGoogleReview && timeRemaining > 0) {
+      const timer = setTimeout(() => {
+        setTimeRemaining(timeRemaining - 1);
       }, 1000);
-
-      return () => clearInterval(timer);
+      return () => clearTimeout(timer);
+    } else if (hasOpenedGoogleReview && timeRemaining === 0) {
+      setCanParticipate(true);
     }
-  }, [hasOpenedGoogleReview, canParticipate, timeRemaining]);
+  }, [hasOpenedGoogleReview, timeRemaining]);
 
   useEffect(() => {
     if (campaignId) {
@@ -163,8 +158,10 @@ export default function LotteryPage() {
     // Ouvrir Google Reviews
     if (googleBusinessUrl) {
       window.open(googleBusinessUrl, '_blank');
-      // Marquer que l'utilisateur a ouvert Google Reviews
+      // Démarrer le compte à rebours de 45 secondes
       setHasOpenedGoogleReview(true);
+      setTimeRemaining(45);
+      setCanParticipate(false);
     }
   };
 
@@ -352,20 +349,24 @@ export default function LotteryPage() {
                     <div className="mb-4">
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-3">
                         <p className="text-yellow-800 font-medium mb-1">
-                          🔔 N'oubliez pas de revenir ici !
+                          ⏳ Veuillez patienter...
                         </p>
                         <p className="text-yellow-700 text-sm">
-                          Après avoir publié votre avis sur Google, revenez sur cette page pour tourner la roue et remporter votre cadeau 🎁
+                          Prenez le temps de laisser votre avis sur Google. Le bouton sera déverrouillé dans un instant ! 🎁
                         </p>
                       </div>
-                      <p className="text-gray-700 mb-2 font-medium">
-                        ⏳ Prenez le temps de publier votre avis...
-                      </p>
                     </div>
                   ) : (
-                    <p className="text-green-700 mb-4 font-medium">
-                      ✅ Merci ! Vous pouvez maintenant participer à la loterie
-                    </p>
+                    <div className="mb-4">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-3">
+                        <p className="text-green-800 font-medium mb-1">
+                          ✅ Parfait !
+                        </p>
+                        <p className="text-green-700 text-sm">
+                          Vous pouvez maintenant tourner la roue et remporter votre cadeau ! 🎁
+                        </p>
+                      </div>
+                    </div>
                   )}
 
                   <button
@@ -378,9 +379,9 @@ export default function LotteryPage() {
                     }`}>
                     {canParticipate
                       ? "Tourner la roue ! 🎯"
-                      : hasOpenedGoogleReview
-                      ? `⏳ Patientez ${timeRemaining}s...`
-                      : "Déverrouillé après avoir ouvert Google Reviews 🔒"
+                      : !hasOpenedGoogleReview
+                      ? "Déverrouillé après avoir ouvert Google Reviews 🔒"
+                      : "Veuillez patienter... ⏳"
                     }
                   </button>
                 </div>
