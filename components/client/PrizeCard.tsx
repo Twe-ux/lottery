@@ -87,6 +87,8 @@ export default function PrizeCard({ winner, commerce, isExpired, isClaimed }: Pr
           email,
           claimCode: winner.claimCode,
           prizeName: winner.prizeSnapshot.name,
+          prizeDescription: winner.prizeSnapshot.description,
+          prizeValue: winner.prizeSnapshot.value,
           expiresAt: winner.expiresAt,
           commerceName: commerce.name,
           prizeUrl: `${window.location.origin}/${commerce.slug}/prize/${winner.claimCode}`,
