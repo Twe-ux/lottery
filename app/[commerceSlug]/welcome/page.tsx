@@ -45,9 +45,9 @@ export default function WelcomePage() {
     }
   };
 
-  const handleStart = () => {
-    router.push(`/${commerceSlug}/lottery?c=${campaignId}`);
-  };
+  // const handleStart = () => {
+  //   router.push(`/${commerceSlug}/lottery?c=${campaignId}`);
+  // };
 
   const handleGoogleSignIn = async () => {
     await signIn("google", {

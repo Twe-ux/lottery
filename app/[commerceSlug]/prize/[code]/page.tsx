@@ -1,10 +1,8 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import dbConnect from '@/lib/db/connect';
-import Winner from '@/lib/db/models/Winner';
-import Commerce from '@/lib/db/models/Commerce';
-import { Gift, Calendar, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
-import QRCodeDisplay from '@/components/client/QRCodeDisplay';
+import dbConnect from "@/lib/db/connect";
+import Winner from "@/lib/db/models/Winner";
+import { AlertCircle, Calendar, CheckCircle2, Clock, Gift } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ commerceSlug: string; code: string }>;
@@ -17,7 +15,7 @@ export default async function PrizePage({ params }: PageProps) {
 
   // Récupérer le gain par le code
   const winner = await Winner.findOne({ claimCode: code })
-    .populate('commerceId')
+    .populate("commerceId")
     .lean();
 
   if (!winner) {
@@ -32,7 +30,7 @@ export default async function PrizePage({ params }: PageProps) {
 
   // Vérifier si le gain est expiré
   const isExpired = new Date() > new Date(winner.expiresAt);
-  const isClaimed = winner.status === 'claimed';
+  const isClaimed = winner.status === "claimed";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4">
@@ -53,10 +51,10 @@ export default async function PrizePage({ params }: PageProps) {
           <div
             className={`py-4 text-center text-white font-semibold ${
               isExpired
-                ? 'bg-red-500'
+                ? "bg-red-500"
                 : isClaimed
-                ? 'bg-green-500'
-                : 'bg-gradient-to-r from-blue-600 to-purple-600'
+                ? "bg-green-500"
+                : "bg-gradient-to-r from-blue-600 to-purple-600"
             }`}
           >
             {isExpired ? (
@@ -108,9 +106,9 @@ export default async function PrizePage({ params }: PageProps) {
               </div>
 
               {/* QR Code */}
-              <div className="bg-white rounded-lg p-4 inline-block mx-auto flex justify-center w-full">
+              {/* <div className="bg-white rounded-lg p-4 inline-block mx-auto flex justify-center w-full">
                 <QRCodeDisplay value={winner.claimCode} size={192} />
-              </div>
+              </div> */}
             </div>
 
             {/* Winner Info */}
@@ -119,7 +117,9 @@ export default async function PrizePage({ params }: PageProps) {
                 <Gift className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm text-gray-600">Gagnant</p>
-                  <p className="font-medium text-gray-900">{winner.clientName}</p>
+                  <p className="font-medium text-gray-900">
+                    {winner.clientName}
+                  </p>
                 </div>
               </div>
 
@@ -129,15 +129,15 @@ export default async function PrizePage({ params }: PageProps) {
                   <p className="text-sm text-gray-600">Date d'expiration</p>
                   <p
                     className={`font-medium ${
-                      isExpired ? 'text-red-600' : 'text-gray-900'
+                      isExpired ? "text-red-600" : "text-gray-900"
                     }`}
                   >
-                    {new Date(winner.expiresAt).toLocaleDateString('fr-FR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
+                    {new Date(winner.expiresAt).toLocaleDateString("fr-FR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -149,16 +149,18 @@ export default async function PrizePage({ params }: PageProps) {
                   <div className="flex-1">
                     <p className="text-sm text-gray-600">Réclamé le</p>
                     <p className="font-medium text-gray-900">
-                      {new Date(winner.claimedAt).toLocaleDateString('fr-FR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
+                      {new Date(winner.claimedAt).toLocaleDateString("fr-FR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       })}
                     </p>
                     {winner.claimedBy && (
-                      <p className="text-sm text-gray-500">Par: {winner.claimedBy}</p>
+                      <p className="text-sm text-gray-500">
+                        Par: {winner.claimedBy}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -173,7 +175,6 @@ export default async function PrizePage({ params }: PageProps) {
                 </h3>
                 <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
                   <li>Présentez ce code en magasin</li>
-                  <li>Montrez le QR code ci-dessus ou communiquez le code</li>
                   <li>Le personnel validera votre gain</li>
                   <li>Profitez de votre cadeau !</li>
                 </ol>
@@ -184,8 +185,8 @@ export default async function PrizePage({ params }: PageProps) {
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <h3 className="font-semibold text-red-900 mb-2">Gain expiré</h3>
                 <p className="text-sm text-red-800">
-                  Ce gain a expiré et ne peut plus être réclamé. Nous espérons vous
-                  revoir bientôt !
+                  Ce gain a expiré et ne peut plus être réclamé. Nous espérons
+                  vous revoir bientôt !
                 </p>
               </div>
             )}
