@@ -27,6 +27,7 @@ export default function CommercesPage() {
     slug: '',
     googlePlaceId: '',
     googleBusinessUrl: '',
+    logo: '',
     primaryColor: '#3B82F6',
   });
 
@@ -36,13 +37,21 @@ export default function CommercesPage() {
 
   const fetchCommerces = async () => {
     try {
+      console.log('[COMMERCES PAGE] Fetching commerces...');
       const res = await fetch('/api/commerces');
+      console.log('[COMMERCES PAGE] Response status:', res.status);
+
       if (res.ok) {
         const data = await res.json();
+        console.log('[COMMERCES PAGE] Response data:', data);
+        console.log('[COMMERCES PAGE] Commerces count:', Array.isArray(data) ? data.length : 0);
         setCommerces(data);
+      } else {
+        const error = await res.json();
+        console.error('[COMMERCES PAGE] Error response:', error);
       }
     } catch (error) {
-      console.error('Error fetching commerces:', error);
+      console.error('[COMMERCES PAGE] Error fetching commerces:', error);
     } finally {
       setLoading(false);
     }
@@ -61,6 +70,7 @@ export default function CommercesPage() {
           slug: fullCommerce.slug,
           googlePlaceId: fullCommerce.googlePlaceId || '',
           googleBusinessUrl: fullCommerce.googleBusinessUrl || '',
+          logo: fullCommerce.logo || '',
           primaryColor: fullCommerce.primaryColor || '#3B82F6',
         });
       }
@@ -71,6 +81,7 @@ export default function CommercesPage() {
         slug: commerce.slug,
         googlePlaceId: commerce.googlePlaceId || '',
         googleBusinessUrl: '',
+        logo: '',
         primaryColor: '#3B82F6',
       });
     }
@@ -99,6 +110,7 @@ export default function CommercesPage() {
           slug: '',
           googlePlaceId: '',
           googleBusinessUrl: '',
+          logo: '',
           primaryColor: '#3B82F6',
         });
         fetchCommerces();
@@ -343,6 +355,39 @@ export default function CommercesPage() {
                     <br />
                     Trouvez-le sur votre profil Google Business ou sur Google Maps.
                   </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Logo (URL)
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.logo}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        logo: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://example.com/logo.png"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    URL de votre logo (ex: hébergé sur Cloudinary, Imgur, etc.)
+                  </p>
+                  {formData.logo && (
+                    <div className="mt-2">
+                      <img
+                        src={formData.logo}
+                        alt="Aperçu du logo"
+                        className="h-16 w-auto object-contain border border-gray-200 rounded p-2"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -16,9 +16,16 @@ interface Prize {
   displayOrder: number;
 }
 
+interface Commerce {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
 export default function PrizesPage() {
   const { data: session } = useSession();
   const [prizes, setPrizes] = useState<Prize[]>([]);
+  const [commerces, setCommerces] = useState<Commerce[]>([]);
   const [loading, setLoading] = useState(true);
   const [commerceId, setCommerceId] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
@@ -39,37 +46,56 @@ export default function PrizesPage() {
       setCommerceId(session.user.commerceId);
       fetchPrizes(session.user.commerceId);
     } else if (session?.user.role === 'super_admin') {
-      fetchFirstCommerce();
+      fetchCommerces();
     }
   }, [session]);
 
-  const fetchFirstCommerce = async () => {
+  const fetchCommerces = async () => {
     try {
+      console.log('[PRIZES PAGE] Fetching commerces for super_admin...');
       const res = await fetch('/api/commerces');
+      console.log('[PRIZES PAGE] Commerces response status:', res.status);
+
       if (res.ok) {
         const data = await res.json();
+        console.log('[PRIZES PAGE] Found commerces:', data.length);
+        setCommerces(data);
         if (data.length > 0) {
+          console.log('[PRIZES PAGE] Using first commerce:', data[0]._id);
           setCommerceId(data[0]._id);
           fetchPrizes(data[0]._id);
         } else {
+          console.log('[PRIZES PAGE] No commerces found');
           setLoading(false);
         }
       }
     } catch (error) {
-      console.error('Error fetching commerce:', error);
+      console.error('[PRIZES PAGE] Error fetching commerce:', error);
       setLoading(false);
     }
   };
 
+  const handleCommerceChange = (newCommerceId: string) => {
+    setCommerceId(newCommerceId);
+    fetchPrizes(newCommerceId);
+  };
+
   const fetchPrizes = async (cId: string) => {
     try {
+      console.log('[PRIZES PAGE] Fetching prizes for commerceId:', cId);
       const res = await fetch(`/api/prizes?commerceId=${cId}`);
+      console.log('[PRIZES PAGE] Prizes response status:', res.status);
+
       if (res.ok) {
         const data = await res.json();
+        console.log('[PRIZES PAGE] Found prizes:', data.length);
         setPrizes(data);
+      } else {
+        const error = await res.json();
+        console.error('[PRIZES PAGE] Error response:', error);
       }
     } catch (error) {
-      console.error('Error fetching prizes:', error);
+      console.error('[PRIZES PAGE] Error fetching prizes:', error);
     } finally {
       setLoading(false);
     }
@@ -201,13 +227,28 @@ export default function PrizesPage() {
             Créez tous les lots disponibles. Vous pourrez ensuite les associer à des ensembles avec des probabilités.
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Nouveau lot
-        </button>
+        <div className="flex items-center gap-4">
+          {session?.user.role === 'super_admin' && commerces.length > 1 && (
+            <select
+              value={commerceId}
+              onChange={(e) => handleCommerceChange(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {commerces.map((commerce) => (
+                <option key={commerce._id} value={commerce._id}>
+                  {commerce.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Nouveau lot
+          </button>
+        </div>
       </div>
 
       {prizes.length === 0 ? (

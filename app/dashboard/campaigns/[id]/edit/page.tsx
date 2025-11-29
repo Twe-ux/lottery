@@ -14,6 +14,10 @@ interface PrizePool {
   _id: string;
   name: string;
   description?: string;
+  commerceName?: string;
+  prizesCount?: number;
+  totalProbability?: number;
+  isComplete?: boolean;
 }
 
 export default function EditCampaignPage() {
@@ -39,13 +43,8 @@ export default function EditCampaignPage() {
   useEffect(() => {
     fetchCampaign();
     fetchCommerces();
+    fetchAllPrizePools();
   }, [campaignId]);
-
-  useEffect(() => {
-    if (formData.commerceId) {
-      fetchPrizePools(formData.commerceId);
-    }
-  }, [formData.commerceId]);
 
   const fetchCampaign = async () => {
     try {
@@ -83,13 +82,31 @@ export default function EditCampaignPage() {
     }
   };
 
-  const fetchPrizePools = async (commerceId: string) => {
+  const fetchAllPrizePools = async () => {
     try {
-      const res = await fetch(`/api/prize-pools?commerceId=${commerceId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setPrizePools(data);
+      // Récupérer tous les commerces pour ensuite charger tous les prize pools
+      const commercesRes = await fetch('/api/commerces');
+      if (!commercesRes.ok) return;
+
+      const commercesData = await commercesRes.json();
+
+      // Charger tous les prize pools de tous les commerces
+      const allPrizePools: PrizePool[] = [];
+
+      for (const commerce of commercesData) {
+        const res = await fetch(`/api/prize-pools?commerceId=${commerce._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Ajouter le nom du commerce à chaque pool pour l'affichage
+          const poolsWithCommerce = data.map((pool: PrizePool) => ({
+            ...pool,
+            commerceName: commerce.name,
+          }));
+          allPrizePools.push(...poolsWithCommerce);
+        }
       }
+
+      setPrizePools(allPrizePools);
     } catch (error) {
       console.error('Error fetching prize pools:', error);
     }
@@ -244,28 +261,32 @@ export default function EditCampaignPage() {
             </div>
           </div>
 
-          {formData.commerceId && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ensemble de lots *
-              </label>
-              <select
-                required
-                value={formData.prizePoolId}
-                onChange={(e) =>
-                  setFormData({ ...formData, prizePoolId: e.target.value })
-                }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Sélectionner un ensemble de lots</option>
-                {prizePools.map((pool) => (
-                  <option key={pool._id} value={pool._id}>
-                    {pool.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ensemble de lots *
+            </label>
+            <select
+              required
+              value={formData.prizePoolId}
+              onChange={(e) =>
+                setFormData({ ...formData, prizePoolId: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Sélectionner un ensemble de lots</option>
+              {prizePools.map((pool) => (
+                <option key={pool._id} value={pool._id}>
+                  {pool.name} - {pool.commerceName} ({pool.prizesCount || 0} lot{(pool.prizesCount || 0) > 1 ? 's' : ''} - {pool.totalProbability || 0}%)
+                  {!pool.isComplete && ' ⚠️ Incomplet'}
+                </option>
+              ))}
+            </select>
+            {formData.prizePoolId && prizePools.find(p => p._id === formData.prizePoolId && !p.isComplete) && (
+              <p className="text-xs text-yellow-600 mt-1">
+                ⚠️ Cet ensemble n'atteint pas 100%. Complétez-le avant de lancer la campagne.
+              </p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>

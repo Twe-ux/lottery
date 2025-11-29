@@ -16,22 +16,60 @@ export async function GET(req: NextRequest) {
 
     await dbConnect();
 
-    let commerces;
+    console.log('[COMMERCES API] Fetching commerces for user:', session.user.email);
+    console.log('[COMMERCES API] User role:', session.user.role);
+    console.log('[COMMERCES API] User commerceId:', session.user.commerceId);
+
+    let rawCommerces;
 
     // Super admin voit tous les commerces
     if (session.user.role === 'super_admin') {
-      commerces = await Commerce.find().populate('ownerId', 'name email').sort({ createdAt: -1 });
+      rawCommerces = await Commerce.find().sort({ createdAt: -1 }).lean();
     } else {
       // Autres rôles voient uniquement leur commerce
-      commerces = await Commerce.find({ _id: session.user.commerceId })
-        .populate('ownerId', 'name email')
-        .sort({ createdAt: -1 });
+      console.log('[COMMERCES API] Searching for commerceId:', session.user.commerceId);
+      rawCommerces = await Commerce.find({ _id: session.user.commerceId })
+        .sort({ createdAt: -1 })
+        .lean();
     }
+
+    console.log('[COMMERCES API] Found raw commerces:', rawCommerces.length);
+
+    // Populer manuellement pour gérer les références manquantes
+    const commerces = await Promise.all(
+      rawCommerces.map(async (commerce: any) => {
+        try {
+          let ownerData = null;
+          if (commerce.ownerId) {
+            ownerData = await User.findById(commerce.ownerId)
+              .select('name email')
+              .lean();
+          }
+
+          return {
+            ...commerce,
+            ownerId: ownerData || { _id: commerce.ownerId, name: 'Propriétaire supprimé', email: '' },
+          };
+        } catch (err) {
+          console.error('[COMMERCES API] Error populating commerce:', commerce._id, err);
+          return {
+            ...commerce,
+            ownerId: { _id: commerce.ownerId, name: 'Propriétaire supprimé', email: '' },
+          };
+        }
+      })
+    );
+
+    console.log('[COMMERCES API] Commerces populated:', commerces.length);
 
     return NextResponse.json(commerces);
   } catch (error) {
-    console.error('Error fetching commerces:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('[COMMERCES API] Error fetching commerces:', error);
+    console.error('[COMMERCES API] Error stack:', (error as Error).stack);
+    return NextResponse.json(
+      { error: 'Internal server error', message: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
 

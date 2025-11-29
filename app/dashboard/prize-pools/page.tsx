@@ -33,10 +33,17 @@ interface PrizePool {
   createdAt: string;
 }
 
+interface Commerce {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
 export default function PrizePoolsPage() {
   const { data: session } = useSession();
   const [prizePools, setPrizePools] = useState<PrizePool[]>([]);
   const [availablePrizes, setAvailablePrizes] = useState<Prize[]>([]);
+  const [commerces, setCommerces] = useState<Commerce[]>([]);
   const [loading, setLoading] = useState(true);
   const [commerceId, setCommerceId] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
@@ -53,15 +60,16 @@ export default function PrizePoolsPage() {
       fetchPrizePools(session.user.commerceId);
       fetchPrizes(session.user.commerceId);
     } else if (session?.user.role === 'super_admin') {
-      fetchFirstCommerce();
+      fetchCommerces();
     }
   }, [session]);
 
-  const fetchFirstCommerce = async () => {
+  const fetchCommerces = async () => {
     try {
       const res = await fetch('/api/commerces');
       if (res.ok) {
         const data = await res.json();
+        setCommerces(data);
         if (data.length > 0) {
           setCommerceId(data[0]._id);
           fetchPrizePools(data[0]._id);
@@ -74,6 +82,12 @@ export default function PrizePoolsPage() {
       console.error('Error fetching commerce:', error);
       setLoading(false);
     }
+  };
+
+  const handleCommerceChange = (newCommerceId: string) => {
+    setCommerceId(newCommerceId);
+    fetchPrizePools(newCommerceId);
+    fetchPrizes(newCommerceId);
   };
 
   const fetchPrizes = async (cId: string) => {
@@ -267,13 +281,28 @@ export default function PrizePoolsPage() {
             Créez des groupes de gains avec des probabilités qui totalisent 100%
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Nouvel ensemble
-        </button>
+        <div className="flex items-center gap-4">
+          {session?.user.role === 'super_admin' && commerces.length > 1 && (
+            <select
+              value={commerceId}
+              onChange={(e) => handleCommerceChange(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {commerces.map((commerce) => (
+                <option key={commerce._id} value={commerce._id}>
+                  {commerce.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Nouvel ensemble
+          </button>
+        </div>
       </div>
 
       {prizePools.length === 0 ? (
