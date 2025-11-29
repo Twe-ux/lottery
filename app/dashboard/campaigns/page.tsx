@@ -47,11 +47,17 @@ export default function CampaignsPage() {
 
   const fetchCampaigns = async () => {
     try {
+      console.log('[CAMPAIGNS PAGE] Fetching campaigns...');
       const response = await fetch('/api/campaigns');
+      console.log('[CAMPAIGNS PAGE] Response status:', response.status);
+
       const data = await response.json();
+      console.log('[CAMPAIGNS PAGE] Response data:', data);
+      console.log('[CAMPAIGNS PAGE] Campaigns count:', data.campaigns?.length || 0);
+
       setCampaigns(data.campaigns || []);
     } catch (error) {
-      console.error('Error fetching campaigns:', error);
+      console.error('[CAMPAIGNS PAGE] Error fetching campaigns:', error);
     } finally {
       setLoading(false);
     }

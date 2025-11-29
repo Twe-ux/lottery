@@ -14,17 +14,63 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const campaigns = await Campaign.find()
-      .populate('commerceId', 'name slug')
-      .populate('prizePoolId', 'name description')
+    console.log('[CAMPAIGNS API] Fetching campaigns for user:', session.user.email);
+
+    // Récupérer les campagnes sans populate pour éviter les erreurs
+    const rawCampaigns = await Campaign.find()
       .sort({ createdAt: -1 })
       .lean();
 
+    console.log('[CAMPAIGNS API] Found raw campaigns:', rawCampaigns.length);
+
+    // Populer manuellement pour gérer les références manquantes
+    const Commerce = (await import('@/lib/db/models/Commerce')).default;
+    const PrizePool = (await import('@/lib/db/models/PrizePool')).default;
+
+    const campaigns = await Promise.all(
+      rawCampaigns.map(async (campaign: any) => {
+        try {
+          // Récupérer le commerce
+          let commerceData = null;
+          if (campaign.commerceId) {
+            commerceData = await Commerce.findById(campaign.commerceId)
+              .select('name slug')
+              .lean();
+          }
+
+          // Récupérer le prize pool
+          let prizePoolData = null;
+          if (campaign.prizePoolId) {
+            prizePoolData = await PrizePool.findById(campaign.prizePoolId)
+              .select('name description')
+              .lean();
+          }
+
+          return {
+            ...campaign,
+            commerceId: commerceData || { _id: campaign.commerceId, name: 'Commerce supprimé' },
+            prizePoolId: prizePoolData || { _id: campaign.prizePoolId, name: 'Pool supprimé' },
+          };
+        } catch (err) {
+          console.error('[CAMPAIGNS API] Error populating campaign:', campaign._id, err);
+          // Retourner la campagne avec des données par défaut
+          return {
+            ...campaign,
+            commerceId: { _id: campaign.commerceId, name: 'Commerce supprimé' },
+            prizePoolId: { _id: campaign.prizePoolId, name: 'Pool supprimé' },
+          };
+        }
+      })
+    );
+
+    console.log('[CAMPAIGNS API] Campaigns populated:', campaigns.length);
+
     return NextResponse.json({ campaigns });
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
+    console.error('[CAMPAIGNS API] Error fetching campaigns:', error);
+    console.error('[CAMPAIGNS API] Error stack:', (error as Error).stack);
     return NextResponse.json(
-      { error: 'Failed to fetch campaigns' },
+      { error: 'Failed to fetch campaigns', message: (error as Error).message },
       { status: 500 }
     );
   }
