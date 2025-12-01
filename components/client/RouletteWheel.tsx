@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, useAnimation } from 'framer-motion';
+import { motion, useAnimation } from "framer-motion";
+import { useEffect, useState } from "react";
 
 interface Prize {
   id: string;
@@ -32,16 +32,16 @@ export default function RouletteWheel({
 
   // Palette de couleurs pour les 10 segments
   const colorPalette = [
-    '#EF4444', // red
-    '#F59E0B', // amber
-    '#10B981', // emerald
-    '#3B82F6', // blue
-    '#8B5CF6', // violet
-    '#EC4899', // pink
-    '#14B8A6', // teal
-    '#F97316', // orange
-    '#06B6D4', // cyan
-    '#A855F7', // purple
+    "#EF4444", // red
+    "#F59E0B", // amber
+    "#10B981", // emerald
+    "#3B82F6", // blue
+    "#8B5CF6", // violet
+    "#EC4899", // pink
+    "#14B8A6", // teal
+    "#F97316", // orange
+    "#06B6D4", // cyan
+    "#A855F7", // purple
   ];
 
   // Déclencher automatiquement l'animation quand spinAngle est défini
@@ -86,7 +86,7 @@ export default function RouletteWheel({
         <motion.div
           className="relative w-full h-full rounded-full shadow-2xl overflow-hidden"
           animate={controls}
-          style={{ transformOrigin: 'center center' }}
+          style={{ transformOrigin: "center center" }}
         >
           <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
             {Array.from({ length: TOTAL_SEGMENTS }).map((_, index) => {
@@ -114,13 +114,53 @@ export default function RouletteWheel({
 
               return (
                 <g key={index}>
-                  <path d={pathData} fill={colorPalette[index]} stroke="white" strokeWidth="0.5" />
+                  <path
+                    d={pathData}
+                    fill={colorPalette[index]}
+                    stroke="white"
+                    strokeWidth="0.5"
+                  />
+                  <text
+                    x={
+                      50 +
+                      30 *
+                        Math.cos(start + (segmentAngle * (Math.PI / 180)) / 2)
+                    }
+                    y={
+                      50 +
+                      30 *
+                        Math.sin(start + (segmentAngle * (Math.PI / 180)) / 2)
+                    }
+                    fill="white"
+                    fontSize="6"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    alignmentBaseline="middle"
+                    transform={`rotate(${startAngle + segmentAngle / 2}, ${
+                      50 +
+                      30 *
+                        Math.cos(start + (segmentAngle * (Math.PI / 180)) / 2)
+                    }, ${
+                      50 +
+                      30 *
+                        Math.sin(start + (segmentAngle * (Math.PI / 180)) / 2)
+                    })`}
+                  >
+                    🎁
+                  </text>
                 </g>
               );
             })}
 
             {/* Cercle central */}
-            <circle cx="50" cy="50" r="8" fill="white" stroke="#333" strokeWidth="1" />
+            <circle
+              cx="50"
+              cy="50"
+              r="8"
+              fill="white"
+              stroke="#333"
+              strokeWidth="1"
+            />
           </svg>
         </motion.div>
 

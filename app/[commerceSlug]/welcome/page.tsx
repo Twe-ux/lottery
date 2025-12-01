@@ -26,7 +26,7 @@ export default function WelcomePage() {
   const commerceSlug = params.commerceSlug as string;
   const campaignId = searchParams.get("c");
 
-  console.log(campaign?.commerceId.logo);
+  // console.log(campaign);
 
   const logo = campaign?.commerceId.logo;
 

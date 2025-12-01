@@ -256,7 +256,7 @@ export default function LotteryPage() {
             </h3>
             <div className="text-left bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
               <p className="text-gray-800 font-medium  text-center mb-3">
-                Une nouvelle fenêtre va s'ouvrir avec Google Reviews.
+                Une nouvelle fenêtre va s'ouvrir avec <br /> Google Avis.
               </p>
               <p className="text-gray-700 mb-4 text-center ">
                 📝 <strong>Après avoir publié votre avis</strong>,<br /> revenez
@@ -274,7 +274,7 @@ export default function LotteryPage() {
               onClick={handleConfirmOpenGoogle}
               className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg rounded-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all shadow-lg"
             >
-              J'ai compris, ouvrir Google Reviews
+              J'ai compris, ouvrir Google Avis
             </button>
             <button
               onClick={() => setShowWarningModal(false)}
@@ -356,7 +356,7 @@ export default function LotteryPage() {
                           fill="#EA4335"
                         />
                       </svg>
-                      Ouvrir Google Reviews
+                      Ouvrir Google Avis
                     </button>
                   </div>
                 </div>
@@ -391,7 +391,7 @@ export default function LotteryPage() {
                   <div className="flex-1">
                     {!hasOpenedGoogleReview ? (
                       <p className="text-gray-600 mb-4 italic">
-                        🔒 Cliquez d'abord sur "Ouvrir Google Reviews" ci-dessus
+                        🔒 Cliquez d'abord sur "Ouvrir Google Avis" ci-dessus
                       </p>
                     ) : !canParticipate ? (
                       <div className="mb-4">
@@ -401,7 +401,7 @@ export default function LotteryPage() {
                           </p>
                           <p className="text-yellow-700 text-sm">
                             Prenez le temps de laisser votre avis sur Google. Le
-                            bouton sera déverrouillé dans un instant ! 🎁
+                            bouton se déverrouillera après la confirmation ! 🎁
                           </p>
                         </div>
                       </div>
@@ -431,8 +431,8 @@ export default function LotteryPage() {
                       {canParticipate
                         ? "Tourner la roue ! 🎉"
                         : !hasOpenedGoogleReview
-                        ? "Déverrouillé après avoir ouvert Google Reviews 🔒"
-                        : "Veuillez patienter... "}
+                        ? "Déverrouillé après avoir publié un avis 🔒"
+                        : "Veuillez patienter pendant la confirmation de la publication ...  ⏳"}
                     </button>
                   </div>
                 </div>
@@ -621,7 +621,9 @@ export default function LotteryPage() {
                   💡 Sauvegardez votre code
                 </h3>
                 <p className="text-xs text-blue-800">
-                  Prenez une capture d'écran ou cliquez sur "Voir mon gain" pour accéder à toutes les options (copie, email, téléchargement).
+                  Prenez une capture d'écran ou cliquez sur "Voir les options de
+                  sauvegarde" pour accéder à toutes les options (copie, email,
+                  téléchargement).
                 </p>
               </div>
             </div>
@@ -632,7 +634,7 @@ export default function LotteryPage() {
               }
               className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all"
             >
-              Voir mon gain et options de sauvegarde
+              Voir les options de sauvegarde
             </button>
           </div>
         </div>

@@ -1,18 +1,21 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import dbConnect from '@/lib/db/connect';
-import Commerce from '@/lib/db/models/Commerce';
-import Campaign from '@/lib/db/models/Campaign';
-import PrizePool from '@/lib/db/models/PrizePool';
-import Prize from '@/lib/db/models/Prize';
-import { Gift, Star, TrendingUp } from 'lucide-react';
+import dbConnect from "@/lib/db/connect";
+import Campaign from "@/lib/db/models/Campaign";
+import Commerce from "@/lib/db/models/Commerce";
+import Prize from "@/lib/db/models/Prize";
+import PrizePool from "@/lib/db/models/PrizePool";
+import { Gift, Star, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ commerceSlug: string }>;
   searchParams: Promise<{ c?: string; ref?: string }>;
 }
 
-export default async function CommerceLandingPage({ params, searchParams }: PageProps) {
+export default async function CommerceLandingPage({
+  params,
+  searchParams,
+}: PageProps) {
   await dbConnect();
 
   const { commerceSlug } = await params;
@@ -57,7 +60,7 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
   const prizePool = await PrizePool.findById(campaign.prizePoolId).lean();
 
   // Récupérer les lots de la campagne
-  const prizeIds = prizePool?.prizes.map(p => p.prizeId) || [];
+  const prizeIds = prizePool?.prizes.map((p) => p.prizeId) || [];
   const prizes = await Prize.find({
     _id: { $in: prizeIds },
     isActive: true,
@@ -77,7 +80,9 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
               />
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{commerce.name}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {commerce.name}
+              </h1>
               <p className="text-gray-600">Participez et gagnez !</p>
             </div>
           </div>
@@ -96,8 +101,8 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
               Donnez votre avis et tentez de gagner !
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Partagez votre expérience chez {commerce.name} et tournez la roue de
-              la chance pour remporter l'un de nos nombreux cadeaux.
+              Partagez votre expérience chez {commerce.name} et tournez la roue
+              de la chance pour remporter l'un de nos nombreux cadeaux.
             </p>
           </div>
 
@@ -107,7 +112,9 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Star className="w-6 h-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">1. Laissez un avis</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                1. Laissez un avis
+              </h3>
               <p className="text-sm text-gray-600">
                 Partagez votre expérience sur Google
               </p>
@@ -116,7 +123,9 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">2. Tournez la roue</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                2. Tournez la roue
+              </h3>
               <p className="text-sm text-gray-600">
                 Lancez la roue de la chance
               </p>
@@ -125,7 +134,9 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Gift className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">3. Gagnez un cadeau</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                3. Gagnez un cadeau
+              </h3>
               <p className="text-sm text-gray-600">
                 Recevez votre code et réclamez votre lot
               </p>
@@ -163,14 +174,18 @@ export default async function CommerceLandingPage({ params, searchParams }: Page
                 >
                   <Gift className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-1">{prize.name}</h4>
+                <h4 className="font-semibold text-gray-900 mb-1">
+                  {prize.name}
+                </h4>
                 {prize.value && (
                   <p className="text-sm text-green-600 font-medium">
                     Valeur: {prize.value}€
                   </p>
                 )}
                 {prize.description && (
-                  <p className="text-xs text-gray-500 mt-2">{prize.description}</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {prize.description}
+                  </p>
                 )}
               </div>
             ))}
