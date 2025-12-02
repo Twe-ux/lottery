@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Gift, CheckCircle, Clock, XCircle, Search } from 'lucide-react';
+import { Gift, CheckCircle, Clock, XCircle, Search, Trash2 } from 'lucide-react';
 
 interface Winner {
   _id: string;
@@ -31,6 +31,7 @@ export default function WinnersPage() {
   const [searchCode, setSearchCode] = useState('');
   const [selectedCommerce, setSelectedCommerce] = useState<string>('all');
   const [validatingCode, setValidatingCode] = useState<string | null>(null);
+  const [anonymizingId, setAnonymizingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCommerces();
@@ -106,6 +107,35 @@ export default function WinnersPage() {
       setWinners(data.winners || []);
     } catch (error) {
       console.error('Error searching winner:', error);
+    }
+  };
+
+  const anonymizeWinner = async (winnerId: string, clientName: string) => {
+    if (!confirm(`Supprimer les coordonnées de ${clientName} ?\n\nLe code de gain sera conservé mais les informations personnelles (nom, email) seront définitivement supprimées.`)) {
+      return;
+    }
+
+    setAnonymizingId(winnerId);
+
+    try {
+      const response = await fetch('/api/winners/anonymize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ winnerId }),
+      });
+
+      if (response.ok) {
+        alert('Coordonnées supprimées avec succès !');
+        fetchWinners();
+      } else {
+        const data = await response.json();
+        alert(data.error || 'Erreur lors de la suppression');
+      }
+    } catch (error) {
+      console.error('Error anonymizing winner:', error);
+      alert('Erreur lors de la suppression');
+    } finally {
+      setAnonymizingId(null);
     }
   };
 
@@ -277,23 +307,46 @@ export default function WinnersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {winner.status === 'pending' && (
-                      <button
-                        onClick={() => validateClaim(winner.claimCode)}
-                        disabled={validatingCode === winner.claimCode}
-                        className="text-green-600 hover:text-green-900 disabled:opacity-50"
-                      >
-                        {validatingCode === winner.claimCode
-                          ? 'Validation...'
-                          : 'Valider'}
-                      </button>
-                    )}
-                    {winner.status === 'claimed' && winner.claimedAt && (
-                      <div className="text-xs text-gray-500">
-                        Réclamé le{' '}
-                        {new Date(winner.claimedAt).toLocaleDateString('fr-FR')}
-                      </div>
-                    )}
+                    <div className="flex justify-end items-center gap-3">
+                      {winner.status === 'pending' && (
+                        <button
+                          onClick={() => validateClaim(winner.claimCode)}
+                          disabled={validatingCode === winner.claimCode}
+                          className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                        >
+                          {validatingCode === winner.claimCode
+                            ? 'Validation...'
+                            : 'Valider'}
+                        </button>
+                      )}
+                      {winner.status === 'claimed' && (
+                        <>
+                          <div className="text-xs text-gray-500">
+                            Réclamé le{' '}
+                            {new Date(winner.claimedAt!).toLocaleDateString('fr-FR')}
+                          </div>
+                          {winner.clientName !== '[SUPPRIMÉ]' && (
+                            <button
+                              onClick={() => anonymizeWinner(winner._id, winner.clientName)}
+                              disabled={anonymizingId === winner._id}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                              title="Supprimer les coordonnées (RGPD)"
+                            >
+                              {anonymizingId === winner._id ? (
+                                'Suppression...'
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          )}
+                          {winner.clientName === '[SUPPRIMÉ]' && (
+                            <span className="text-xs text-gray-400 italic">
+                              Données supprimées
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

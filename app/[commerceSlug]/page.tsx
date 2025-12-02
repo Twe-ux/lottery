@@ -6,6 +6,7 @@ import PrizePool from "@/lib/db/models/PrizePool";
 import { Gift, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import CodeRetrieval from "@/components/client/CodeRetrieval";
 
 interface PageProps {
   params: Promise<{ commerceSlug: string }>;
@@ -158,7 +159,7 @@ export default async function CommerceLandingPage({
         </div>
 
         {/* Prizes Showcase */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Lots à gagner
           </h3>
@@ -192,12 +193,41 @@ export default async function CommerceLandingPage({
           </div>
         </div>
 
+        {/* Code Retrieval Section */}
+        <CodeRetrieval
+          commerceId={commerce._id.toString()}
+          commerceSlug={commerceSlug}
+        />
+
         {/* Footer Info */}
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>
             En participant, vous acceptez de laisser un avis honnête sur Google.
             <br />
             Les gains sont valables {campaign.settings.expirationDays} jours.
+          </p>
+        </div>
+
+        {/* RGPD Notice */}
+        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h4 className="text-sm font-semibold text-blue-900 mb-2">
+            🔒 Protection de vos données personnelles
+          </h4>
+          <p className="text-xs text-blue-800 leading-relaxed">
+            Conformément au RGPD, nous collectons vos données personnelles (nom, prénom, adresse email)
+            uniquement dans le cadre de votre participation à cette loterie. Ces données sont utilisées pour :
+            <br />
+            • Vous identifier en tant que participant
+            <br />
+            • Vous attribuer votre gain
+            <br />
+            • Vous contacter concernant votre lot
+            <br />
+            <br />
+            Vos données ne sont jamais partagées avec des tiers. <strong>À votre demande lors de la récupération de votre lot,
+            vos coordonnées personnelles seront immédiatement et définitivement supprimées</strong>, seul le code de gain
+            sera conservé pour notre gestion interne. Vous disposez également d'un droit d'accès et de rectification
+            de vos données. Pour exercer ces droits, contactez-nous à l'adresse email du commerce.
           </p>
         </div>
       </main>
