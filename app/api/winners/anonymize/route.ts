@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // Anonymiser les données personnelles
     winner.clientName = '[SUPPRIMÉ]';
     winner.clientEmail = '[SUPPRIMÉ]';
-    winner.claimedBy = session.user.email; // Garder une trace de qui a effectué la suppression
+    winner.claimedBy = session.user.email || 'admin'; // Garder une trace de qui a effectué la suppression
 
     await winner.save();
 
