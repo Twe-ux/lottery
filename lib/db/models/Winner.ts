@@ -62,7 +62,6 @@ const WinnerSchema = new Schema<IWinner>(
     claimCode: {
       type: String,
       required: true,
-      unique: true,
       uppercase: true,
     },
     claimQrCode: {

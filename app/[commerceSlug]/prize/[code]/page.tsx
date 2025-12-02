@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/db/connect";
 import Winner from "@/lib/db/models/Winner";
+import Commerce from "@/lib/db/models/Commerce";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PrizeCard from "@/components/client/PrizeCard";
@@ -14,16 +15,20 @@ export default async function PrizePage({ params }: PageProps) {
   const { commerceSlug, code } = await params;
 
   // Récupérer le gain par le code
-  const winner = await Winner.findOne({ claimCode: code })
-    .populate("commerceId")
-    .lean();
+  const winner = await Winner.findOne({ claimCode: code }).lean();
 
   if (!winner) {
     notFound();
   }
 
+  // Récupérer le commerce manuellement
+  const commerce = await Commerce.findById(winner.commerceId).lean();
+
+  if (!commerce) {
+    notFound();
+  }
+
   // Vérifier que le commerce correspond
-  const commerce = winner.commerceId as any;
   if (commerce.slug !== commerceSlug) {
     notFound();
   }
