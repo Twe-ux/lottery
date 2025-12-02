@@ -42,7 +42,7 @@ export default function LotteryPage() {
   const [googleBusinessUrl, setGoogleBusinessUrl] = useState<string>("");
   const [hasOpenedGoogleReview, setHasOpenedGoogleReview] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(45);
+  const [timeRemaining, setTimeRemaining] = useState(15); // Sera réinitialisé avec une valeur aléatoire
   const [canParticipate, setCanParticipate] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
@@ -163,9 +163,10 @@ export default function LotteryPage() {
     // Ouvrir Google Reviews
     if (googleBusinessUrl) {
       window.open(googleBusinessUrl, "_blank");
-      // Démarrer le compte à rebours de 45 secondes
+      // Démarrer le compte à rebours avec un délai aléatoire entre 15 et 25 secondes
+      const randomDelay = Math.floor(Math.random() * (25 - 15 + 1)) + 15;
       setHasOpenedGoogleReview(true);
-      setTimeRemaining(45);
+      setTimeRemaining(randomDelay);
       setCanParticipate(false);
     }
   };

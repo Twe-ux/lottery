@@ -9,6 +9,7 @@ ReviewLottery permet aux commerces de gamifier la collecte d'avis Google en offr
 ## 🚀 Fonctionnalités MVP (Phase 1)
 
 ### ✅ Administration
+
 - 🔐 Authentification admin (NextAuth.js)
 - 🏪 Gestion des commerces (CRUD)
 - 🎁 Gestion des lots avec probabilités personnalisables
@@ -19,6 +20,7 @@ ReviewLottery permet aux commerces de gamifier la collecte d'avis Google en offr
 - ⚙️ Paramètres du compte
 
 ### ✅ Côté Client
+
 - 🎯 Landing page par commerce (scan QR code)
 - ✍️ Formulaire de soumission d'avis
 - 🎰 Roue de loterie animée (Framer Motion)
@@ -58,11 +60,13 @@ npm run dev
 ## 🔑 Accès
 
 ### Admin Dashboard
+
 - URL: http://localhost:3001/dashboard
 - Email: `admin@reviewlottery.com`
 - Password: `admin123`
 
 ### Page Client (Démo)
+
 - URL: http://localhost:3001/cafe-demo
 
 ## 📁 Structure du Projet
@@ -109,10 +113,13 @@ npm run dev
 Le système de loterie supporte deux modes de probabilités:
 
 ### Mode Fixed (Fixe)
+
 Chaque lot a une probabilité fixe définie (ex: 40%, 30%, 20%, 10%)
 
 ### Mode Star-Based (Basé sur les étoiles)
+
 Les probabilités varient selon la note donnée par le client:
+
 - ⭐ (1 étoile): Meilleurs lots plus probables
 - ⭐⭐⭐⭐⭐ (5 étoiles): Tous les lots équiprobables
 
