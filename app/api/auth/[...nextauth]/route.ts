@@ -14,15 +14,27 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log('🔐 [AUTH] Tentative de connexion pour:', credentials?.email);
+
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ [AUTH] Credentials manquantes');
           return null;
         }
 
         await dbConnect();
+        console.log('✅ [AUTH] Connexion DB établie');
 
         const user = await User.findOne({ email: credentials.email });
 
-        if (!user || !user.password) {
+        if (!user) {
+          console.log('❌ [AUTH] Utilisateur non trouvé:', credentials.email);
+          return null;
+        }
+
+        console.log('✅ [AUTH] Utilisateur trouvé:', user.email, '- Role:', user.role);
+
+        if (!user.password) {
+          console.log('❌ [AUTH] Utilisateur sans mot de passe');
           return null;
         }
 
@@ -31,9 +43,14 @@ export const authOptions: NextAuthOptions = {
           user.password
         );
 
+        console.log('🔐 [AUTH] Mot de passe valide:', isPasswordValid);
+
         if (!isPasswordValid) {
+          console.log('❌ [AUTH] Mot de passe incorrect');
           return null;
         }
+
+        console.log('✅ [AUTH] Authentification réussie pour:', user.email);
 
         return {
           id: user._id.toString(),

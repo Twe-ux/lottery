@@ -3,7 +3,9 @@
 import RouletteWheel from "@/components/client/RouletteWheel";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Copy, Check, Mail, Download, Share2, Calendar } from "lucide-react";
+import html2canvas from "html2canvas";
 
 interface Prize {
   id: string;
@@ -50,6 +52,12 @@ export default function LotteryPage() {
     clientName: "",
     clientEmail: "",
   });
+  const [copied, setCopied] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const commerceSlug = params.commerceSlug as string;
   const campaignId = searchParams.get("c");
@@ -227,6 +235,120 @@ export default function LotteryPage() {
     setTimeout(() => {
       setStep("result");
     }, 1500);
+  };
+
+  // Fonctions de sauvegarde du code
+  const handleCopy = async () => {
+    if (!result) return;
+    try {
+      await navigator.clipboard.writeText(result.claimCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const handleScreenshot = async () => {
+    if (!cardRef.current) return;
+
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: "#f9fafb",
+        scale: 2,
+      });
+
+      const link = document.createElement("a");
+      link.download = `gain-${result?.claimCode}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    } catch (err) {
+      console.error("Failed to capture:", err);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!result) return;
+    setEmailLoading(true);
+    try {
+      const response = await fetch("/api/send-prize-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          claimCode: result.claimCode,
+          prizeName: result.prize.name,
+          prizeDescription: result.prize.description,
+          prizeValue: result.prize.value,
+          expiresAt: result.expiresAt,
+          commerceName: commerceSlug,
+          prizeUrl: `${window.location.origin}/${commerceSlug}/prize/${result.claimCode}`,
+        }),
+      });
+
+      if (response.ok) {
+        setEmailSent(true);
+        setTimeout(() => {
+          setShowEmailModal(false);
+          setEmailSent(false);
+        }, 2000);
+      } else {
+        alert("Erreur lors de l'envoi de l'email");
+      }
+    } catch (err) {
+      console.error("Failed to send email:", err);
+      alert("Erreur lors de l'envoi de l'email");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!result) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Mon gain: ${result.prize.name}`,
+          text: `J'ai gagné ${result.prize.name} ! Code: ${result.claimCode}`,
+          url: `${window.location.origin}/${commerceSlug}/prize/${result.claimCode}`,
+        });
+      } catch (err) {
+        console.error("Failed to share:", err);
+      }
+    } else {
+      // Fallback: copier le lien
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/${commerceSlug}/prize/${result.claimCode}`
+      );
+      alert("Lien copié dans le presse-papier !");
+    }
+  };
+
+  const handleAddToCalendar = () => {
+    if (!result) return;
+    const event = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "BEGIN:VEVENT",
+      `DTSTART:${new Date(result.expiresAt).toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `DTEND:${new Date(result.expiresAt).toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `SUMMARY:Utiliser mon gain: ${result.prize.name}`,
+      `DESCRIPTION:Code de réclamation: ${result.claimCode}\\nCommerce: ${commerceSlug}`,
+      `LOCATION:${commerceSlug}`,
+      "BEGIN:VALARM",
+      "TRIGGER:-PT24H",
+      "ACTION:DISPLAY",
+      "DESCRIPTION:N'oubliez pas d'utiliser votre gain !",
+      "END:VALARM",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\n");
+
+    const blob = new Blob([event], { type: "text/calendar" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `gain-${result.claimCode}.ics`;
+    link.click();
   };
 
   // Modale d'avertissement avant d'ouvrir Google
@@ -580,66 +702,169 @@ export default function LotteryPage() {
 
   if (step === "result" && result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="mb-6">
-              <div className="text-6xl mb-4">🎉</div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Félicitations !
-              </h1>
-              <p className="text-xl text-gray-600">Vous avez gagné :</p>
-            </div>
-
-            <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {result.prize.name}
-              </h2>
-              {result.prize.description && (
-                <p className="text-gray-700">{result.prize.description}</p>
-              )}
-              {result.prize.value && (
-                <p className="text-lg font-semibold text-green-600 mt-2">
-                  Valeur: {result.prize.value}€
-                </p>
-              )}
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-6 mb-6">
-              <p className="text-sm text-gray-600 mb-3">
-                Votre code de réclamation :
-              </p>
-              <div className="text-3xl font-mono font-bold text-blue-600 mb-4 select-all">
-                {result.claimCode}
+      <>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-12 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div ref={cardRef} className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="mb-6">
+                <div className="text-6xl mb-4">🎉</div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Félicitations !
+                </h1>
+                <p className="text-xl text-gray-600">Vous avez gagné :</p>
               </div>
-              <p className="text-sm text-gray-500 mb-4">
-                Valable jusqu'au{" "}
-                {new Date(result.expiresAt).toLocaleDateString("fr-FR")}
-              </p>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-                <h3 className="font-semibold text-blue-900 mb-2 text-sm">
-                  💡 Sauvegardez votre code
+              <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {result.prize.name}
+                </h2>
+                {result.prize.description && (
+                  <p className="text-gray-700">{result.prize.description}</p>
+                )}
+                {result.prize.value && (
+                  <p className="text-lg font-semibold text-green-600 mt-2">
+                    Valeur: {result.prize.value}€
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-6 mb-6">
+                <p className="text-sm text-gray-600 mb-3">
+                  Votre code de réclamation :
+                </p>
+                <div className="text-3xl font-mono font-bold text-blue-600 mb-4 select-all">
+                  {result.claimCode}
+                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  Valable jusqu'au{" "}
+                  {new Date(result.expiresAt).toLocaleDateString("fr-FR")}
+                </p>
+
+                {/* Options de sauvegarde */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <h3 className="font-semibold text-blue-900 mb-3 text-sm">
+                    💡 Options de sauvegarde
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="w-5 h-5 mr-2" />
+                          Copié !
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-5 h-5 mr-2" />
+                          Copier
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleScreenshot}
+                      className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                    >
+                      <Download className="w-5 h-5 mr-2" />
+                      Image
+                    </button>
+
+                    <button
+                      onClick={() => setShowEmailModal(true)}
+                      className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      <Mail className="w-5 h-5 mr-2" />
+                      Email
+                    </button>
+
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                    >
+                      <Share2 className="w-5 h-5 mr-2" />
+                      Partager
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleAddToCalendar}
+                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center justify-center"
+                >
+                  <Calendar className="w-4 h-4 mr-1" />
+                  Ajouter au calendrier
+                </button>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">
+                  Comment récupérer votre gain ?
                 </h3>
-                <p className="text-xs text-blue-800">
-                  Prenez une capture d'écran ou cliquez sur "Voir les options de
-                  sauvegarde" pour accéder à toutes les options (copie, email,
-                  téléchargement).
-                </p>
+                <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside text-left">
+                  <li>Présentez ce code en magasin</li>
+                  <li>Le personnel validera votre gain</li>
+                  <li>Profitez de votre cadeau !</li>
+                </ol>
               </div>
             </div>
-
-            <button
-              onClick={() =>
-                router.push(`/${commerceSlug}/prize/${result.claimCode}`)
-              }
-              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition-all"
-            >
-              Voir les options de sauvegarde
-            </button>
           </div>
         </div>
-      </div>
+
+        {/* Email Modal */}
+        {showEmailModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Recevoir par email
+              </h3>
+
+              {emailSent ? (
+                <div className="text-center py-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                    <Check className="w-8 h-8 text-green-600" />
+                  </div>
+                  <p className="text-lg font-medium text-gray-900">
+                    Email envoyé !
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-600 mb-4">
+                    Recevez votre code de réclamation par email pour le conserver facilement.
+                  </p>
+
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="votre@email.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
+                  />
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowEmailModal(false)}
+                      className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={handleSendEmail}
+                      disabled={emailLoading || !email}
+                      className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {emailLoading ? "Envoi..." : "Envoyer"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 

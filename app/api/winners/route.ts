@@ -19,7 +19,17 @@ export async function GET(request: NextRequest) {
 
     let query = {};
     if (code) {
-      query = { claimCode: code.toUpperCase() };
+      // Recherche progressive : commence par "RVW-" + le code saisi
+      const searchCode = code.toUpperCase();
+      const fullCode = searchCode.startsWith('RVW-') ? searchCode : `RVW-${searchCode}`;
+
+      // Utiliser regex pour recherche "starts with"
+      query = {
+        claimCode: {
+          $regex: `^${fullCode}`,
+          $options: 'i'
+        }
+      };
     }
 
     const winners = await Winner.find(query)

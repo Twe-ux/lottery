@@ -17,18 +17,26 @@ export default function SignIn() {
     setLoading(true);
 
     try {
+      console.log('🔐 Tentative de connexion avec:', email);
+
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
+      console.log('📊 Résultat de connexion:', result);
+
       if (result?.error) {
+        console.error('❌ Erreur de connexion:', result.error);
         setError("Email ou mot de passe incorrect");
-      } else {
-        router.push("/dashboard");
+      } else if (result?.ok) {
+        console.log('✅ Connexion réussie, redirection vers dashboard...');
+        // Force navigation vers le dashboard
+        window.location.href = "/dashboard";
       }
     } catch (error) {
+      console.error('❌ Exception lors de la connexion:', error);
       setError("Une erreur est survenue");
     } finally {
       setLoading(false);
